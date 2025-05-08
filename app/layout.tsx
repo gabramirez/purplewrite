@@ -1,15 +1,13 @@
 import type React from "react"
 import "./globals.css"
 import { Inter } from "next/font/google"
-import { ThemeProvider } from "@/components/theme-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "Natural Write - Humanize AI Text & Outsmart AI Detectors",
+  title: "Purple Write - Humanize AI Text & Outsmart AI Detectors",
   description:
-    "Natural Write converts your AI-generated content into fully humanized, undetectable writing—ensuring it passes every AI detection tool.",
-    generator: 'v0.dev'
+    "Purple Write converts your AI-generated content into fully humanized, undetectable writing—ensuring it passes every AI detection tool.",
 }
 
 export default function RootLayout({
@@ -19,10 +17,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          {children}
-        </ThemeProvider>
+      <body className={inter.className} suppressHydrationWarning={true}>
+        {children}
       </body>
     </html>
   )
