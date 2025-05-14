@@ -1,6 +1,6 @@
-import Image from "next/image"
 import Link from "next/link"
 import { ClipboardIcon } from "lucide-react"
+import { PurpleWriteLogo } from "../components/purple-write-logo"
 
 export default function Home() {
   return (
@@ -9,8 +9,8 @@ export default function Home() {
       <header className="bg-gray-50 py-4 border-b border-gray-200">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <Link href="/" className="flex items-center space-x-2">
-            <Image src="/document-icon-green.png" alt="Natural Write Logo" width={24} height={24} />
-            <span className="text-lg font-medium">Natural Write</span>
+            <PurpleWriteLogo className="w-8 h-8 text-primary" />
+            <span className="text-lg font-medium">Purple Write</span>
           </Link>
           <div className="flex items-center">
             <nav className="flex items-center space-x-6 mr-6">
@@ -26,13 +26,13 @@ export default function Home() {
             </nav>
             <div className="flex items-center space-x-3">
               <Link
-                href="#"
+                href="/login"
                 className="bg-white text-gray-800 px-4 py-2 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors"
               >
                 Log in
               </Link>
               <Link
-                href="#"
+                href="/register"
                 className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:opacity-90 transition-colors"
               >
                 Try for free
@@ -49,12 +49,15 @@ export default function Home() {
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">Humanize AI Text & Outsmart AI Detectors</h1>
             <p className="text-gray-600 max-w-2xl mx-auto mb-8">
-              Natural Write converts your AI-generated content into fully humanized, undetectable writing—ensuring it
+              Purple Write converts your AI-generated content into fully humanized, undetectable writing—ensuring it
               passes every AI detection tool
             </p>
-            <button className="bg-primary text-primary-foreground px-8 py-3 rounded-md hover:opacity-90 transition-colors font-medium">
+            <Link
+              href="/register"
+              className="bg-primary text-primary-foreground px-8 py-3 rounded-md hover:opacity-90 transition-colors font-medium inline-block"
+            >
               Try for free
-            </button>
+            </Link>
           </div>
         </section>
 
@@ -96,7 +99,7 @@ export default function Home() {
       <footer className="border-t border-gray-200 py-6 bg-white">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-sm text-gray-500 mb-4 md:mb-0">© 2025 Natural Write</div>
+            <div className="text-sm text-gray-500 mb-4 md:mb-0">© 2025 Purple Write</div>
             <div className="flex space-x-6">
               <Link href="/pricing" className="text-sm text-gray-500 hover:text-gray-700">
                 Pricing
@@ -107,10 +110,10 @@ export default function Home() {
               <Link href="#" className="text-sm text-gray-500 hover:text-gray-700">
                 Contact
               </Link>
-              <Link href="#" className="text-sm text-gray-500 hover:text-gray-700">
+              <Link href="/privacy-policy" className="text-sm text-gray-500 hover:text-gray-700">
                 Privacy Policy
               </Link>
-              <Link href="#" className="text-sm text-gray-500 hover:text-gray-700">
+              <Link href="/terms-of-service" className="text-sm text-gray-500 hover:text-gray-700">
                 Terms of Service
               </Link>
             </div>
