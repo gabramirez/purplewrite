@@ -1,11 +1,21 @@
+"use client"
 import Link from "next/link"
 import { ClipboardIcon } from "lucide-react"
 import { PurpleWriteLogo } from "../components/purple-write-logo"
-
+import { useAuth } from "./context/AuthContext";
+import Image from "next/image";
+import { createUserProfile } from "@/lib/firebase/AuthHandler";
 export default function Home() {
+   const { user, logOut } = useAuth();
+   if (user) {
+    createUserProfile(user)
+   }
+   console.log(user?.displayName, user?.email, user?.photoURL)
   return (
+    
     <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Navigation */}
+
+    
       <header className="bg-gray-50 py-4 border-b border-gray-200">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <Link href="/" className="flex items-center space-x-2">
@@ -25,6 +35,18 @@ export default function Home() {
               </Link>
             </nav>
             <div className="flex items-center space-x-3">
+            {user ? (
+            <Link href="/profile">
+              <Image
+                width={96}
+                height={96}
+                src={user.photoURL || '/default-avatar.svg'}
+                alt="Avatar"
+                className="w-10 h-10 rounded-full border border-gray-300 hover:opacity-90 transition"
+              />
+            </Link>
+          ) : (
+            <>
               <Link
                 href="/login"
                 className="bg-white text-gray-800 px-4 py-2 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors"
@@ -37,6 +59,8 @@ export default function Home() {
               >
                 Try for free
               </Link>
+            </>
+          )}
             </div>
           </div>
         </div>
