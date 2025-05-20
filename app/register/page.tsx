@@ -26,8 +26,8 @@ export default function RegisterPage() {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return alert("Email obrigatório");
-    if (password.length < 8) return alert("Senha deve ter pelo menos 8 caracteres");
+    if (!email) return alert("Email is required");
+    if (password.length < 8) return alert("Password must be at least 8 characters long.");
     
     await handleEmailRegister(auth, email, password)
     router.push("/");

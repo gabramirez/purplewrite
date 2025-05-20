@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react"
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import { handleRegisterWithGoogle } from "@/lib/firebase/AuthHandler";
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,23 +20,23 @@ export default function LoginPage() {
   }
   
     const handleLoginWithGoogle = async () => {
+    if (!email) {
+      return alert("Email is required.");
+    }
+
+    if (!password) {
+      return alert("Password is required.");
+    }
+
     try {
-      const user = await signInWithGoogle();
+      handleRegisterWithGoogle(signInWithGoogle)
       router.push('/');
-    } catch (error: any) {
-      alert('Erro ao logar com Google: ' + error.message);
+    } catch (error: any) {    
+      alert("Failed to login. Please check your credentials.");
     }
   };
-  const handleLoginWithEmail = async () => { 
-    try{
-      await signInWithEmail(email,password);
-      const router = useRouter()
-      router.push('/');
-    }
-    catch (error: any) {
-      alert('Erro ao logar com Google: ' + error.message);
-    }
-  }
+  
+
 
 
   return (
@@ -105,7 +106,7 @@ export default function LoginPage() {
             </div>
 
             {/* Email Login Form */}
-            <form onSubmit={handleLoginWithEmail}>
+            <form onSubmit={handleLoginWithGoogle}>
               <div className="space-y-4">
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
