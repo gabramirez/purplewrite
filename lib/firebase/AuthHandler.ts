@@ -7,6 +7,7 @@ import { useAuth } from "@/app/context/AuthContext";
 export const createUserProfile = async (user: User) => {
   const userRef = doc(db, "usersProfiles", user.uid)
   const userSnap = await getDoc(userRef)
+
   if (!userSnap.exists()) {
     try{
       await setDoc(userRef, {
