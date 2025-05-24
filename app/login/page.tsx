@@ -14,11 +14,11 @@ export default function LoginPage() {
   const { signInWithGoogle, signInWithEmail } = useAuth();
   const router = useRouter()
   const auth = getAuth()
-  const recoverPassword = async () => {
-    await sendPasswordResetEmail(auth, email).then(() => {
-      console.log("email enviado")
-    })
-  }
+    const recoverPassword = async () => {
+      await sendPasswordResetEmail(auth, email).then(() => {
+        console.log("email enviado")
+      })
+    }
 
     const handleLoginWithGoogle = async () => {
     try {

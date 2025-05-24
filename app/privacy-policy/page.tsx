@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import { PurpleWriteLogo } from "../../components/purple-write-logo"
 import Header from "@/components/ui/Header"

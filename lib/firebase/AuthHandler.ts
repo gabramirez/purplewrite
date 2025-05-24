@@ -4,24 +4,12 @@ import {doc, getDoc, setDoc } from "firebase/firestore"
 import { getAuth ,createUserWithEmailAndPassword, User, UserCredential, Auth } from "firebase/auth";
 import { useAuth } from "@/app/context/AuthContext";
 
-export const createUserProfile = async (user: User) => {
-  const userRef = doc(db, "usersProfiles", user.uid)
-  const userSnap = await getDoc(userRef)
-
-  if (!userSnap.exists()) {
-    try{
-      await setDoc(userRef, {
-      userId: user.uid,
-      subscription: "freeplan",
-      wordsBalance: 250,
-    })} 
-    catch (error: any){
-
-    }
-
-  } else {
-
-  }
+const createUserProfile = async (userUid:string) => {
+    const res = await fetch("http://127.0.0.1:8080/purplewrite-719f8/us-central1/setupUserProfile", {method: "POST", headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ userUid: userUid})
+});
 }
 
 export const handleRegisterWithGoogle = async (
@@ -29,8 +17,8 @@ export const handleRegisterWithGoogle = async (
 ) => {
   try {
     const { user } = await signInWithGoogle()
-    console.log(user)
-    await createUserProfile(user)
+    createUserProfile(user.uid)
+
   } catch (error: any) {
 
   }
@@ -43,7 +31,8 @@ export const handleEmailRegister = async (
 ) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-    await createUserProfile(userCredential.user)
+    createUserProfile(userCredential.user.uid)
+    
   } catch (error: any) {
 
   }
