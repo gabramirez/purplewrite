@@ -1,46 +1,45 @@
+"use client"
 import Link from "next/link"
 import { GoogleIcon } from "../../components/google-icons"
 import { PurpleWriteLogo } from "../../components/purple-write-logo"
+import React, { useState } from "react"
+import { getAuth ,createUserWithEmailAndPassword, User, UserCredential, EmailAuthCredential } from "firebase/auth";
+import { useAuth } from "../context/AuthContext";
+import { Router } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { db,auth} from "@/lib/firebase/firebase"
+import {doc, setDoc } from "firebase/firestore"
+import { handleRegisterWithGoogle, handleEmailRegister} from "@/lib/firebase/AuthHandler"
+import Header from "@/components/ui/Header"
 
 export default function RegisterPage() {
+  const { signInWithGoogle } = useAuth();
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const auth = getAuth();   
+  
+  const handleGoogleClick = async () => {
+    await handleRegisterWithGoogle(signInWithGoogle)
+    router.push("/");
+  }
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return alert("Email is required");
+    if (password.length < 8) return alert("Password must be at least 8 characters long.");
+
+    await handleEmailRegister(auth, email, password)
+    router.push("/");
+  }
+
+
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Navigation */}
-      <header className="bg-gray-50 py-4 border-b border-gray-200">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center space-x-2">
-            <PurpleWriteLogo className="w-8 h-8 text-primary" />
-            <span className="text-lg font-medium">Purple Write</span>
-          </Link>
-          <div className="flex items-center">
-            <nav className="flex items-center space-x-6 mr-6">
-              <Link href="/pricing" className="text-gray-600 hover:text-gray-900">
-                Pricing
-              </Link>
-              <Link href="/affiliate" className="text-gray-600 hover:text-gray-900">
-                Earn with us
-              </Link>
-              <Link href="#" className="text-gray-600 hover:text-gray-900">
-                Contact
-              </Link>
-            </nav>
-            <div className="flex items-center space-x-3">
-              <Link
-                href="/login"
-                className="bg-white text-gray-800 px-4 py-2 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/register"
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:opacity-90 transition-colors font-medium"
-              >
-                Try for free
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header/>
 
       {/* Main Content */}
       <main className="flex-grow flex items-center justify-center py-12">
@@ -52,7 +51,9 @@ export default function RegisterPage() {
 
           <div className="bg-white p-8 rounded-lg border border-gray-200 shadow-sm">
             {/* Social Login */}
-            <button className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-md hover:bg-gray-50 transition-colors mb-6">
+            <button className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-md hover:bg-gray-50 transition-colors mb-6"
+            onClick={handleGoogleClick}
+            >
               <GoogleIcon className="w-5 h-5" />
               <span>Sign up with Google</span>
             </button>
@@ -67,7 +68,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Email Registration Form */}
-            <form>
+            <form onSubmit={(e) => handleEmailSubmit(e)}>
               <div className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -78,7 +79,9 @@ export default function RegisterPage() {
                     name="name"
                     type="text"
                     autoComplete="name"
-                    required
+                    required 
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Enter your full name"
                   />
@@ -96,6 +99,8 @@ export default function RegisterPage() {
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
 
@@ -109,6 +114,8 @@ export default function RegisterPage() {
                     type="password"
                     autoComplete="new-password"
                     required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     placeholder="Create a password"
                   />

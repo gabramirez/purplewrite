@@ -6,21 +6,22 @@ import Link from "next/link"
 import { useState } from "react"
 import { PurpleWriteLogo } from "../../components/purple-write-logo"
 import { ArrowLeft, CheckCircle } from "lucide-react"
-
+import { getAuth, sendPasswordResetEmail } from "firebase/auth"
 export default function ForgotPasswordPage() {
+  const auth = getAuth()
   const [email, setEmail] = useState("")
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const recoverPassword = async () => {
+    await sendPasswordResetEmail(auth, email).then(() => {
+      })
+    }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-
-    // Simulate API call
-    setTimeout(() => {
+    recoverPassword()
       setIsSubmitted(true)
       setIsLoading(false)
-    }, 1500)
   }
 
   return (

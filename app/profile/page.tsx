@@ -4,51 +4,42 @@ import Link from "next/link"
 import { LogOut, CreditCard, Clock } from "lucide-react"
 import { PurpleWriteLogo } from "../../components/purple-write-logo"
 import { useState, useEffect } from "react"
-
+import { useAuth } from "../context/AuthContext"
+import { findUserByUserId } from "@/lib/firebase/CrudService"
+import { UserProfile } from "@/lib/firebase/CrudService"
+import Header from "@/components/ui/Header"
+import { useRouter } from "next/navigation"
 export default function ProfilePage() {
-  const [balanceLoading, setBalanceLoading] = useState(true)
-  const [subscriptionLoading, setSubscriptionLoading] = useState(true)
+  const [profileLoading, setProfileLoading] = useState(true)
+  const { user, logOut } = useAuth();
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const router = useRouter()
+useEffect(() => {
+  if (!user) {
+    setUserProfile(null);
+    return;
+  }
 
-  // Simulate loading data
-  useEffect(() => {
-    const balanceTimer = setTimeout(() => {
-      setBalanceLoading(false)
-    }, 2000)
+  const fetchUserProfile = async () => {
+    setProfileLoading(true);
 
-    const subscriptionTimer = setTimeout(() => {
-      setSubscriptionLoading(false)
-    }, 2500)
 
-    return () => {
-      clearTimeout(balanceTimer)
-      clearTimeout(subscriptionTimer)
+    const profile = await findUserByUserId(user.uid);
+
+    if (profile) {
+      setUserProfile(profile);
     }
-  }, [])
 
-  return (
+    setProfileLoading(false);
+
+  };
+
+  fetchUserProfile();
+}, [user])
+  return (      
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Navigation */}
-      <header className="bg-gray-50 py-4 border-b border-gray-200">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center space-x-2">
-            <PurpleWriteLogo className="w-8 h-8 text-primary" />
-            <span className="text-lg font-medium">Purple Write</span>
-          </Link>
-          <div className="flex items-center">
-            <nav className="flex items-center space-x-6">
-              <Link href="/pricing" className="text-gray-600 hover:text-gray-900">
-                Pricing
-              </Link>
-              <Link href="/affiliate" className="text-gray-600 hover:text-gray-900">
-                Earn with us
-              </Link>
-              <Link href="#" className="text-gray-600 hover:text-gray-900">
-                Contact
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Header/>
 
       {/* Main Content */}
       <main className="flex-grow container mx-auto px-4 py-12">
@@ -73,7 +64,11 @@ export default function ProfilePage() {
                 </svg>
                 <h2 className="text-xl font-medium">Account</h2>
               </div>
-              <Link href="/login" className="flex items-center text-red-500 hover:text-red-600 text-sm font-medium">
+              <Link href="/login" className="flex items-center text-red-500 hover:text-red-600 text-sm font-medium" onClick={async (e) => {
+      e.preventDefault(); // Impede o redirecionamento automático do <Link>
+      await logOut();     // Executa o logout
+      router.push("/login"); // Redireciona após logout
+    }}>
                 <LogOut className="h-4 w-4 mr-1" />
                 Log out
               </Link>
@@ -82,12 +77,12 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Name</p>
-                <p className="text-gray-900">Not provided</p>
+                <p className="text-gray-900">{user?.displayName}</p>
               </div>
 
               <div>
                 <p className="text-sm text-gray-600 mb-1">Email</p>
-                <p className="text-gray-900">Not provided</p>
+                <p className="text-gray-900">{user?.email}</p>
               </div>
             </div>
           </div>
@@ -101,18 +96,13 @@ export default function ProfilePage() {
                 <h2 className="text-xl font-medium">Balance</h2>
               </div>
 
-              {balanceLoading ? (
+              {profileLoading ? (
                 <p className="text-gray-500">Loading...</p>
               ) : (
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Available Words</p>
-                    <p className="text-2xl font-medium text-primary">15,000</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Words Used This Month</p>
-                    <p className="text-gray-900">2,450</p>
+                    <p className="text-2xl font-medium text-primary">{userProfile?.wordsBalance}</p>
                   </div>
                 </div>
               )}
@@ -125,13 +115,13 @@ export default function ProfilePage() {
                 <h2 className="text-xl font-medium">Subscription</h2>
               </div>
 
-              {subscriptionLoading ? (
+              {profileLoading ? (
                 <p className="text-gray-500">Loading...</p>
               ) : (
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Current Plan</p>
-                    <p className="text-gray-900 font-medium">Pro</p>
+                    <p className="text-gray-900 font-medium">{userProfile?.subscription}</p>
                   </div>
 
                   <div>
@@ -139,9 +129,6 @@ export default function ProfilePage() {
                     <p className="text-gray-900">June 15, 2025</p>
                   </div>
 
-                  <button className="text-primary hover:text-primary-dark text-sm font-medium">
-                    Manage Subscription
-                  </button>
                 </div>
               )}
             </div>
