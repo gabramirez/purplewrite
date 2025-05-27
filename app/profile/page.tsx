@@ -9,33 +9,50 @@ import { findUserByUserId } from "@/lib/firebase/CrudService"
 import { UserProfile } from "@/lib/firebase/CrudService"
 import Header from "@/components/ui/Header"
 import { useRouter } from "next/navigation"
+import { getUserProfile } from "@/lib/firebase/apiRequests"
 export default function ProfilePage() {
   const [profileLoading, setProfileLoading] = useState(true)
   const { user, logOut } = useAuth();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const router = useRouter()
 useEffect(() => {
-  if (!user) {
-    setUserProfile(null);
-    return;
-  }
-
   const fetchUserProfile = async () => {
-    setProfileLoading(true);
+    if (!user?.uid) return;
+    try {
+      const res = await getUserProfile(user.uid)
+      if (!res.ok) {
+        console.error("Erro ao buscar perfil:", res.statusText);
+        return;
+      }
 
-
-    const profile = await findUserByUserId(user.uid);
-
-    if (profile) {
-      setUserProfile(profile);
+      const data: UserProfile = await res.json();
+      console.log(data)
+      setUserProfile(data);
+    } catch (error) {
+      console.error("Erro na requisição:", error);
     }
-
-    setProfileLoading(false);
-
   };
 
   fetchUserProfile();
-}, [user])
+}, [user?.uid]);
+
+function formatExpirationDate(timestamp: number): string {
+  const date = new Date(timestamp * 1000);
+
+  const formattedDate = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+
+  const formattedTime = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+
+  return `Your plan expires on ${formattedDate} at ${formattedTime}`;
+}
   return (      
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Navigation */}

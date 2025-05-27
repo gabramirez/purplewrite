@@ -17,32 +17,43 @@ module.exports = {
     project: ["tsconfig.json", "tsconfig.dev.json"],
     sourceType: "module",
   },
-  ignorePatterns: [
-    "/lib/**/*",
-    "/generated/**/*",
-  ],
   plugins: [
     "@typescript-eslint",
     "import",
   ],
-  rules: {
+  rules: {  
+   // Regras desativadas para evitar alertas chatos
+    'no-trailing-spaces': 'off',
+    'eol-last': 'off',
+    'no-multi-spaces': 'off',
+    'comma-spacing': 'off',
+    'key-spacing': 'off',
+    'arrow-parens': 'off',
+    'require-jsdoc': 'off',
+    'no-empty': 'off',
+    'no-throw-literal': 'off',
+    'import/no-unresolved': 'off',
+    'import/no-duplicates': 'off',
 
-  
-    "no-trailing-spaces": "off",           
-    "comma-spacing": "off",               
-    "indent": "off",                
-    "key-spacing": "off",                 
-    "comma-dangle": "off",              
+    // Desativa padrões de estilo
+    'semi': 'off',
+    'quotes': 'off',
+    'indent': 'off',
+    'comma-dangle': 'off',
+    'object-curly-spacing': 'off',
+    'space-before-function-paren': 'off',
+    'max-len': 'off',
+    'keyword-spacing': 'off',
+    'brace-style': 'off',
+    'padded-blocks': 'off',
+    'space-before-blocks': 'off',
 
-    "quotes": ["warn", "double", { "avoidEscape": true }],
-    "max-len": "off",
-    "object-curly-spacing": "off",
-    "eol-last": "off",
-    "semi": "off",
-
-    "@typescript-eslint/no-non-null-assertion": "off",
-    "@typescript-eslint/no-unused-vars": "warn",
-    "@typescript-eslint/no-explicit-any": "off",
-    "import/no-unresolved": "off",
+    // Typescript específicos
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
   },
+  ignorePatterns: ['lib/**', 'dist/**', 'node_modules/**'],
 };

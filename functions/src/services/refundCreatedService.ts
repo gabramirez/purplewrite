@@ -14,5 +14,5 @@ export const refundCreatedService = async (refund : Stripe.RefundCreateParams, s
     const subscriptionDetails = parent.subscription_details
     const subscriptionId = subscriptionDetails.subscription 
     const userRef = await findUserBySubscriptionId(subscriptionId)
-    updateUserSubscription(userRef, PLANS.FREE)
+    updateUserSubscription(userRef, PLANS.FREE, 0)
 }

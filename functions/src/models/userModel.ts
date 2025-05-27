@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import {DocumentReference} from "firebase-admin/firestore"
 import { SubscriptionPlan } from "../interfaces/SubscriptionPlan";
 import { PlanTemplate } from "../interfaces/SubscriptionPlan";
+
 export const findUserByUserUid = async (userUid:string) => { 
     const db = admin.firestore()
     const useQuery = await db.collection("usersProfiles").where("userId", "==", userUid).get();
@@ -26,7 +27,9 @@ export const findUserBySubscriptionId = async (subscriptionId: string) => {
 }
 export function updateUserSubscription(
   doc: DocumentReference,
-  newSubscription: SubscriptionPlan | PlanTemplate
+  newSubscription: SubscriptionPlan | PlanTemplate,
+  currentPeriodEnd: number
+  
 ){
 
   function isSubscriptionPlan(obj: any): obj is SubscriptionPlan {
@@ -37,12 +40,14 @@ export function updateUserSubscription(
      doc.update({
       subscriptionId: newSubscription.subscriptionId,
       subscription: newSubscription.plan,
-      wordsBalance: newSubscription.wordsBalance
+      wordsBalance: newSubscription.wordsBalance,
+      currentPeriodEnd: currentPeriodEnd
     });
   } else {
       doc.update({
       subscription: newSubscription.plan,
-      wordsBalance: newSubscription.wordsBalance
+      wordsBalance: newSubscription.wordsBalance,
+      currentPeriodEnd: currentPeriodEnd
     });
   }
 }

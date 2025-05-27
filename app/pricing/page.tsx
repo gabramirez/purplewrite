@@ -5,9 +5,11 @@ import { Check } from "lucide-react"
 import { useState } from "react"
 import { PurpleWriteLogo } from "../../components/purple-write-logo"
 import Header from "@/components/ui/Header"
+import { useAuth } from "../context/AuthContext"
+import { postCheckoutSession } from "@/lib/firebase/apiRequests"
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(true)
-
+  const {user} = useAuth();
   const pricingPlans = {
     monthly: [
       {
@@ -16,6 +18,7 @@ export default function PricingPage() {
         discountedPrice: null,
         wordsPerMonth: "5,000",
         wordsPerRequest: "500",
+        priceId: "price_1RQwmsQ96ai7WSnx5gl8SkOC",
         features: [
           "500 words per request",
           "Bypass all AI detectors (incl. Turnitin & GPTZero)",
@@ -31,6 +34,7 @@ export default function PricingPage() {
       {
         name: "Pro",
         price: "$19.99",
+        priceId: "price_1RQwnaQ96ai7WSnxIMZAuxin",
         discountedPrice: null,
         wordsPerMonth: "15,000",
         wordsPerRequest: "1,500",
@@ -56,6 +60,7 @@ export default function PricingPage() {
         discountedPrice: null,
         wordsPerMonth: "30,000",
         wordsPerRequest: "3,000",
+        priceId: "price_1RQwoMQ96ai7WSnxzsDQn4xc",
         features: [
           "3,000 words per request",
           "Bypass all AI detectors (incl. Turnitin & GPTZero)",
@@ -79,6 +84,7 @@ export default function PricingPage() {
       {
         name: "Basic",
         price: "$6.99",
+        priceId: "price_1RQwmsQ96ai7WSnx5gl8SkOC",
         discountedPrice: "$4.99",
         wordsPerMonth: "5,000",
         wordsPerRequest: "500",
@@ -97,6 +103,7 @@ export default function PricingPage() {
       {
         name: "Pro",
         price: "$19.99",
+        priceId: "price_1RQwmsQ96ai7WSnx5gl8SkOC",
         discountedPrice: "$13.99",
         wordsPerMonth: "15,000",
         wordsPerRequest: "1,500",
@@ -119,6 +126,7 @@ export default function PricingPage() {
       {
         name: "Ultra",
         price: "$39.99",
+        priceId: "price_1RQwmsQ96ai7WSnx5gl8SkOC",
         discountedPrice: "$27.99",
         wordsPerMonth: "30,000",
         wordsPerRequest: "3,000",
@@ -208,7 +216,9 @@ export default function PricingPage() {
                   </div>
                 </div>
 
-                <button className="bg-primary text-primary-foreground py-3 rounded-md hover:opacity-90 transition-colors mb-6">
+                <button className="bg-primary text-primary-foreground py-3 rounded-md hover:opacity-90 transition-colors mb-6" onClick={() => {
+                  postCheckoutSession(plan.priceId, user?.uid)
+                }}>
                   Subscribe
                 </button>
 

@@ -1,19 +1,46 @@
 "use client"
 import Link from "next/link"
 import { ClipboardIcon } from "lucide-react"
-import { PurpleWriteLogo } from "../components/purple-write-logo"
 import { useAuth } from "./context/AuthContext";
 import Image from "next/image";
-import { createUserProfile } from "@/lib/firebase/AuthHandler";
 import Header from "@/components/ui/Header";
+import { useEffect, useState } from "react";
+import { getUserProfile } from "@/lib/firebase/apiRequests";
 export default function Home() {
-  const { user, logOut } = useAuth();
+  interface UserProfile {
+  subscription: string;
+  subscriptionId: string;
+  userId: string;
+  wordsBalance: number;
+}
+  const { user} = useAuth();
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+useEffect(() => {
+  const fetchUserProfile = async () => {
+    if (!user?.uid) return;
+    try {
+      const res = await getUserProfile(user.uid)
+      if (!res.ok) {
+        console.error("Erro ao buscar perfil:", res.statusText);
+        return;
+      }
+
+      const data: UserProfile = await res.json();
+      console.log(data)
+      setUserProfile(data);
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+    }
+  };
+
+  fetchUserProfile();
+}, [user?.uid]);
+
   return (
     
     <div className="flex flex-col min-h-screen bg-gray-50">
 
       <Header/>
-
       {/* Main Content */}
       <main className="flex-grow">
         {/* Hero Section */}

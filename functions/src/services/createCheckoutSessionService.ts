@@ -2,11 +2,11 @@
 import Stripe from "stripe";
 
    
-export const createCheckoutSessionService = async (stripe:Stripe, userUid:string, origin: string ) => {   
+export const createCheckoutSessionService = async (stripe:Stripe, userUid:string, origin: string, priceId:string ) => {   
    const session = await stripe.checkout.sessions.create({
       line_items: [
         {
-          price: "price_1RQwmsQ96ai7WSnx5gl8SkOC",
+          price: priceId,
           quantity: 1,
         },
       ],

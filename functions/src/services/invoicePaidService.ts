@@ -9,8 +9,12 @@ export const invoicePaidService =  async (invoice : Stripe.Invoice, stripe: Stri
     const parent = invoice.parent as CustomInvoiceParent
     const subscriptionDetails = parent.subscription_details
     const userUid = subscriptionDetails.metadata.userUid as string
-    const subscriptionId = subscriptionDetails.subscription 
+    const subscriptionId = subscriptionDetails.subscription
     const lineItems = await stripe.invoices.listLineItems(invoice.id!)
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+    expand: ['items.data'], // importante para acessar os items diretamente
+    });
+    const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
     const planProduct = lineItems.data[0] as CustomLineItem;
     const productId = planProduct.pricing.price_details.product
     let subscriptionPlan: SubscriptionPlan;
@@ -46,7 +50,7 @@ export const invoicePaidService =  async (invoice : Stripe.Invoice, stripe: Stri
           }
         const userRef = await findUserByUserUid(userUid)
         try{
-            updateUserSubscription(userRef, subscriptionPlan)
+            updateUserSubscription(userRef, subscriptionPlan, currentPeriodEnd)
         }  
         catch (e){
     }

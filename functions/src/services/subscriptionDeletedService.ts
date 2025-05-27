@@ -7,5 +7,5 @@ export const subscriptionDeletedService = async (subscriptionId: string) => {
         ...PLANS.FREE,
         subscriptionId:""
     }
-    updateUserSubscription(userRef, subscriptionPlan)
+    updateUserSubscription(userRef, subscriptionPlan,0)
 }
