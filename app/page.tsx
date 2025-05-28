@@ -8,81 +8,18 @@ import { useEffect, useState } from "react";
 import { getUserProfile } from "@/lib/firebase/apiRequests";
 import { AIDetectionResult } from "../components/ai-detection-result"
 import { useRouter } from "next/navigation"
+import { postCheckAi } from "@/lib/firebase/apiRequests";
+import { AIDetector, generateDetectorResults } from "@/lib/firebase/mockDetection";
 export default function Home() {
-  const [text, setText] = useState("")
-  const [showAIDetection, setShowAIDetection] = useState(false)
-  const [isCheckingAI, setIsCheckingAI] = useState(false)
-  const router = useRouter()
-  const { user, logOut } = useAuth();
-
-  const handleHumanize = () => {
-    if (text.trim()) {
-      localStorage.setItem("inputText", text)
-      router.push("/results")
-    }
-  }
-
-  const handleCheckAI = () => {
-    if (!text.trim()) return
-
-    setIsCheckingAI(true)
-    setShowAIDetection(true)
-    setTimeout(() => {
-      setIsCheckingAI(false)
-    }, 3000)
-  }
-
-  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const inputText = e.target.value
-    const words = inputText.trim() ? inputText.trim().split(/\s+/) : []
-
-    if (words.length <= 250) {
-      setText(inputText)
-      setShowAIDetection(false)
-    }
-  }
-
-  const handlePasteText = async () => {
-    try {
-      const clipboardText = await navigator.clipboard.readText()
-      const words = clipboardText.trim() ? clipboardText.trim().split(/\s+/) : []
-
-      if (words.length <= 250) {
-        setText(clipboardText)
-        setShowAIDetection(false)
-      } else {
-
-        const truncatedWords = words.slice(0, 250)
-        const truncatedText = truncatedWords.join(" ")
-        setText(truncatedText)
-        setShowAIDetection(false)
-      }
-    } catch (err) {
-      console.error("Failed to read clipboard contents: ", err)
-    }
-  }
-
-  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0
-
-  // Mock AI detection data
-  const mockDetectors = [
-    { name: "Turnitin", status: "detected" as const },
-    { name: "GPTZero", status: "warning" as const },
-    { name: "OpenAI", status: "detected" as const },
-    { name: "Writer", status: "detected" as const },
-    { name: "CrossPlag", status: "detected" as const },
-    { name: "CopyLeaks", status: "warning" as const },
-    { name: "Sapling", status: "detected" as const },
-    { name: "Originality", status: "detected" as const },
-    { name: "ZeroGPT", status: "warning" as const },
-  ]
   interface UserProfile {
   subscription: string;
   subscriptionId: string;
   userId: string;
   wordsBalance: number;
 }
+  const { user} = useAuth();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [detectorResults, setDetectorResults] = useState<AIDetector[]>([])
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!user?.uid) return;
@@ -103,8 +40,81 @@ export default function Home() {
 
     fetchUserProfile();
   }, [user?.uid]);
+  const wordsBalance = userProfile?.wordsBalance ?? 250
+  const [text, setText] = useState("")
+  const [showAIDetection, setShowAIDetection] = useState(false)
+  const [isCheckingAI, setIsCheckingAI] = useState(false)
+  const router = useRouter()
+  const [humanWrittenPercentage, setHumanWrittenPercentage] = useState(0)
+  
+  const handleHumanize = () => {
+    if (!user){
+      router.push("/register")
+    }
+    if (text.trim()) {
+      localStorage.setItem("inputText", text)
+      localStorage.setItem("userProfile", JSON.stringify(user))
+      router.push("/results")
+    }
+  }
 
+  const handleCheckAI = async () => {
+    if (!user){
+      router.push("/register")
+    }
+    if (!text.trim()) return
+    setIsCheckingAI(true)
+    setShowAIDetection(true)
+    const response = await postCheckAi(user!.uid, text)
+    const data = await response.json()
+    let humanPercent = (data.humanPercent)
+    humanPercent = Math.trunc(parseFloat(humanPercent))
+    setDetectorResults(generateDetectorResults(humanPercent))
+    setHumanWrittenPercentage(humanPercent)
+    setIsCheckingAI(false)
+  }
 
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const inputText = e.target.value
+    const words = inputText.trim() ? inputText.trim().split(/\s+/) : []
+    if (words.length <= wordsBalance) {
+      setText(inputText)
+      setShowAIDetection(false)
+    }
+  }   
+  const handlePasteText = async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText()
+      const words = clipboardText.trim() ? clipboardText.trim().split(/\s+/) : []
+
+      if (words.length <= wordsBalance) {
+        setText(clipboardText)
+        setShowAIDetection(false)
+      } else {
+
+        const truncatedWords = words.slice(0, wordsBalance)
+        const truncatedText = truncatedWords.join(" ")
+        setText(truncatedText)
+        setShowAIDetection(false)
+      }
+    } catch (err) {
+      console.error("Failed to read clipboard contents: ", err)
+    }
+  }
+
+  const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0
+  const mockDetectors = [
+    { name: "Turnitin", status: "detected" as const },
+    { name: "GPTZero", status: "warning" as const },
+    { name: "OpenAI", status: "detected" as const },
+    { name: "Writer", status: "detected" as const },
+    { name: "CrossPlag", status: "detected" as const },
+    { name: "CopyLeaks", status: "warning" as const },
+    { name: "Sapling", status: "detected" as const },
+    { name: "Originality", status: "detected" as const },
+    { name: "ZeroGPT", status: "warning" as const },
+  ]
+  console.log(user?.uid)
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Navigation */}
@@ -124,7 +134,9 @@ export default function Home() {
               className="bg-primary text-primary-foreground px-8 py-3 rounded-md hover:opacity-90 transition-colors font-medium inline-block"
             >
               Try for free
-            </Link>) : ("")}
+            </Link>) : <button className="bg-primary text-primary-foreground px-8 py-3 rounded-md hover:opacity-90 transition-colors font-medium" onClick={() => {router.push("/pricing")}}>
+              Get more words
+            </button> }
           </div>
         </section>
 
@@ -146,9 +158,9 @@ export default function Home() {
 
                 <div className="flex justify-between items-center">
                   <div
-                    className={`text-sm ${wordCount > 200 ? (wordCount >= 250 ? "text-red-500" : "text-yellow-500") : "text-gray-500"}`}
+                    className={`text-sm ${wordCount > wordsBalance*4/5 ? (wordCount >= wordsBalance ? "text-red-500" : "text-yellow-500") : "text-gray-500"}`}
                   >
-                    {wordCount} / 250 words
+                    {wordCount} / {wordsBalance} words
                   </div>
 
                   <div className="flex space-x-3">
@@ -162,7 +174,7 @@ export default function Home() {
 
                     <button
                       onClick={handleCheckAI}
-                      disabled={!text.trim() || wordCount > 250}
+                      disabled={!text.trim() || wordCount > wordsBalance}
                       className="bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Check for AI
@@ -170,7 +182,7 @@ export default function Home() {
 
                     <button
                       onClick={handleHumanize}
-                      disabled={!text.trim() || wordCount > 250}
+                      disabled={!text.trim() || wordCount > wordsBalance}
                       className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Humanize
@@ -184,21 +196,25 @@ export default function Home() {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <h2 className="text-lg font-medium mb-4">Your Text</h2>
 
-                  <div className="min-h-[400px] border border-gray-200 rounded-lg p-4 mb-4">
-                    <div className="w-full h-full min-h-[350px] text-gray-900 whitespace-pre-wrap">{text}</div>
-                  </div>
+                <div className="min-h-[400px] border border-gray-200 rounded-lg p-4 mb-4">
+                  <textarea
+                    value={text}
+                    onChange={handleTextChange}
+                    className="w-full h-full min-h-[350px] resize-none focus:outline-none"
+                  />
+                </div>
 
                   <div className="flex justify-between items-center">
                     <div
-                      className={`text-sm ${wordCount > 200 ? (wordCount >= 250 ? "text-red-500" : "text-yellow-500") : "text-gray-500"}`}
+                      className={`text-sm ${wordCount > wordsBalance * 4 / 5 ? (wordCount >= wordsBalance ? "text-red-500" : "text-yellow-500") : "text-gray-500"}`}
                     >
-                      {wordCount} / 250 words
+                      {wordCount} / {wordsBalance} words
                     </div>
 
                     <div className="flex space-x-3">
                       <button
                         onClick={handleCheckAI}
-                        disabled={!text.trim() || isCheckingAI || wordCount > 250}
+                        disabled={!text.trim() || isCheckingAI || wordCount > wordsBalance}
                         className="flex items-center space-x-2 border border-primary text-primary px-4 py-2 rounded-md hover:bg-primary/5 transition-colors text-sm disabled:opacity-50"
                       >
                         {isCheckingAI ? "Checking..." : "Check for AI"}
@@ -206,7 +222,7 @@ export default function Home() {
 
                       <button
                         onClick={handleHumanize}
-                        disabled={!text.trim() || wordCount > 250}
+                        disabled={!text.trim() || wordCount > wordsBalance}
                         className="flex items-center space-x-2 bg-primary text-primary-foreground px-4 py-2 rounded-md hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                       >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -227,7 +243,7 @@ export default function Home() {
                   <h2 className="text-lg font-medium mb-4">Result</h2>
 
                   <div className="min-h-[400px] flex items-center justify-center">
-                    <AIDetectionResult overallPercentage={6} detectors={mockDetectors} isLoading={isCheckingAI} />
+                    <AIDetectionResult overallPercentage={humanWrittenPercentage} detectors={detectorResults} isLoading={isCheckingAI} />
                   </div>
                 </div>
               </div>
@@ -244,9 +260,6 @@ export default function Home() {
             <div className="flex space-x-6">
               <Link href="/pricing" className="text-sm text-gray-500 hover:text-gray-700">
                 Pricing
-              </Link>
-              <Link href="/affiliate" className="text-sm text-gray-500 hover:text-gray-700">
-                Earn with us
               </Link>
               <Link href="#" className="text-sm text-gray-500 hover:text-gray-700">
                 Contact

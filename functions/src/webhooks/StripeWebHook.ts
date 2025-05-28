@@ -4,11 +4,11 @@ import { invoicePaidService } from "../services/invoicePaidService";
 import { refundCreatedService } from "../services/refundCreatedService";
 import { subscriptionDeletedService } from "../services/subscriptionDeletedService";
 
-export const handleStripeWebhook = onRequest({ cors: false }, async (req, res) => {
+export const handleStripeWebhook = onRequest({cors:true}, async (req, res) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: "2025-04-30.basil",
   });
-  const endpointSecret = "whsec_223b39ef3dece451c2ecd88da8108adfa76ea126dc0d577cff1faf19994a7d4e";
+  const endpointSecret = process.env.ENDPOINT_SECRET!;
   const sig = req.headers["stripe-signature"] as string;
   let event;
   try {

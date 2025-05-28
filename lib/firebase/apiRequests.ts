@@ -1,5 +1,5 @@
 export const getUserProfile = async (userUid:string) => {
-        return await fetch("http://127.0.0.1:8080/purplewrite-719f8/us-central1/getUserProfile", {
+        return await fetch(process.env.NEXT_PUBLIC_GETUSER_ROUTE!, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -9,28 +9,31 @@ export const getUserProfile = async (userUid:string) => {
 
 }
 
-export const postHumanizeText = async (userUid:string, inputText:string) => {
-        return await fetch("http://127.0.0.1:8080/purplewrite-719f8/us-central1/humanizeText)", {
+export const postHumanizeText = async (userUid:string | undefined, inputText:string) => {
+        return await fetch(process.env.NEXT_PUBLIC_HUMANIZE_ROUTE!, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userUid: userUid, inputText:inputText }),
+        body: JSON.stringify({ userUid: userUid, text:inputText }),
       });
 }
 
-export const postCheckAi = async (userUid:string, inputText:string) => {
-        return await fetch("http://127.0.0.1:8080/purplewrite-719f8/us-central1/getUserProfile", {
+export const postCheckAi = async (userUid:string | undefined, inputText:string) => {
+        console.log("requisição executada em "+ process.env.NEXT_PUBLIC_CHECKAI_ROUTE! )
+        return await fetch(process.env.NEXT_PUBLIC_CHECKAI_ROUTE!, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ userUid: userUid, inputText:inputText }),
       });
+      
 }
 
 export const postCheckoutSession = async (priceId:string , userUid:string | undefined) => {
-    const res = await fetch('http://127.0.0.1:8080/purplewrite-719f8/us-central1/createCheckoutSession', {
+    console.log(process.env.NEXT_PUBLIC_CHECKOUT_SESSION!)
+    const res = await fetch(process.env.NEXT_PUBLIC_CHECKOUT_SESSION!, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

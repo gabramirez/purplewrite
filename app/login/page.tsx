@@ -1,11 +1,9 @@
 "use client"
 import Link from "next/link"
 import { GoogleIcon } from "../../components/google-icons"
-import { PurpleWriteLogo } from "../../components/purple-write-logo"
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react"
-import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import { handleRegisterWithGoogle } from "@/lib/firebase/AuthHandler";
 import Header from "@/components/ui/Header";
 export default function LoginPage() {
@@ -13,13 +11,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const { signInWithGoogle, signInWithEmail } = useAuth();
   const router = useRouter()
-  const auth = getAuth()
-    const recoverPassword = async () => {
-      await sendPasswordResetEmail(auth, email).then(() => {
-        console.log("email enviado")
-      })
-    }
-
     const handleLoginWithGoogle = async () => {
     try {
       await handleRegisterWithGoogle(signInWithGoogle)
@@ -32,12 +23,15 @@ export default function LoginPage() {
     if (!email) {
       return alert("Email is required.");
     }
-
     if (!password) {
       return alert("Password is required.");
     }
-
-    signInWithEmail(email,password)
+    try{
+      signInWithEmail(email,password)
+      router.push('/');
+    }
+    catch(e){
+    }
   }
 
 
@@ -151,7 +145,6 @@ export default function LoginPage() {
 
       {/* Footer */}
       <footer className="border-t border-gray-200 py-6 bg-white">
-        {/* ... (sem mudanças no footer) */}
       </footer>
     </div>
   );

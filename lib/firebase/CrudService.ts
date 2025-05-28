@@ -4,6 +4,7 @@ export interface UserProfile{
     subscription: string,
     userId: string,
     wordsBalance: number
+    currentPeriodEnd: number
 }
 
 export const findUserByUserId = async (userId: string) => {

@@ -16,9 +16,7 @@ export default function Header (){
               <Link href="/pricing" className="text-gray-600 hover:text-gray-900">
                 Pricing
               </Link>
-              <Link href="/affiliate" className="text-gray-600 hover:text-gray-900">
-                Earn with us
-              </Link>
+
               <Link href="#" className="text-gray-600 hover:text-gray-900">
                 Contact
               </Link>

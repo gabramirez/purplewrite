@@ -5,36 +5,37 @@ import { Copy, CheckCircle } from "lucide-react"
 import { PurpleWriteLogo } from "../../components/purple-write-logo"
 import { AIDetectionResult } from "../../components/ai-detection-result"
 import { useState, useEffect } from "react"
-
+import { postCheckAi, postHumanizeText } from "@/lib/firebase/apiRequests"
+import { userAgent } from "next/server"
+import { useAuth } from "../context/AuthContext"
+import { User } from "firebase/auth"
+import Header from "@/components/ui/Header"
+import { useRouter } from "next/navigation"
 export default function ResultsPage() {
   const [originalText, setOriginalText] = useState("")
   const [humanizedText, setHumanizedText] = useState("")
+  const [userProfile, setUserProfile] = useState<User>()
   const [isLoading, setIsLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [showOriginalAI, setShowOriginalAI] = useState(false)
   const [showResultAI, setShowResultAI] = useState(false)
   const [isCheckingOriginalAI, setIsCheckingOriginalAI] = useState(false)
   const [isCheckingResultAI, setIsCheckingResultAI] = useState(false)
-
+  const [humanWrittenPercentage, setHumanWrittenPercentage] = useState(0)
+  const {user} = useAuth();
+  const router = useRouter()
   useEffect(() => {
     const inputText = localStorage.getItem("inputText") || ""
+    const savedUser = localStorage.getItem("userProfile") as string
     setOriginalText(inputText)
+      try {
+        const userProfileJson = JSON.parse(savedUser) as User
+        setUserProfile(userProfileJson)
+      } catch (error) {
 
-    setTimeout(() => {
-      const humanized = simulateHumanization(inputText)
-      setHumanizedText(humanized)
-      setIsLoading(false)
-    }, 2000)
+      }
+      handleHumanize()
   }, [])
-
-  const simulateHumanization = (text: string) => {
-    return text
-      .replace(/AI/g, "artificial intelligence")
-      .replace(/\bthe\b/g, "a")
-      .replace(/\bis\b/g, "becomes")
-      .replace(/\bwill\b/g, "shall")
-      .replace(/\bcan\b/g, "may")
-  }
 
   const handleCopy = async () => {
     try {
@@ -42,23 +43,48 @@ export default function ResultsPage() {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
-      console.error("Failed to copy text: ", err)
     }
   }
 
-  const handleCheckOriginalAI = () => {
-    if (!originalText.trim()) return
-    setIsCheckingOriginalAI(true)
+  const handleCheckOriginalAI = async () => {
+      if (!user){
+      router.push("/register")
+      return
+    }
+    setIsCheckingOriginalAI(true);
+    try {
+    if (!originalText){
+      const inputText = localStorage.getItem("inputText") || ""
+      const response = await postCheckAi("Aaaa", inputText)
+      const data = await response.json()
+      let humanPercent = (data.humanPercent)
+      humanPercent = Math.trunc(parseFloat(humanPercent))
+      setHumanWrittenPercentage(humanPercent)
+      setIsCheckingOriginalAI(false)
+    }
+    else{
+      const inputText = originalText 
+      try{
+      const response = await postCheckAi("a", inputText)
+      const data = await response.json()   
+      let humanPercent = (data.humanPercent)
+      humanPercent = Math.trunc(parseFloat(humanPercent))
+      setHumanWrittenPercentage(humanPercent)
+      setIsCheckingOriginalAI(false)
+      }
+      catch(e){
+      }
+    }
+  } catch (error) {
+    console.log(error)
+  } finally {
+    setIsLoading(false)
     setShowOriginalAI(true)
-    setTimeout(() => setIsCheckingOriginalAI(false), 3000)
+  }
+    
   }
 
-  const handleCheckResultAI = () => {
-    if (!humanizedText.trim()) return
-    setIsCheckingResultAI(true)
-    setShowResultAI(true)
-    setTimeout(() => setIsCheckingResultAI(false), 3000)
-  }
+
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const inputText = e.target.value
@@ -70,40 +96,46 @@ export default function ResultsPage() {
     }
   }
 
-  const handlePasteText = async () => {
-    try {
-      const clipboardText = await navigator.clipboard.readText()
-      const words = clipboardText.trim() ? clipboardText.trim().split(/\s+/) : []
 
-      if (words.length <= 250) {
-        setOriginalText(clipboardText)
-        setShowOriginalAI(false)
-      } else {
-        // Truncar para 250 palavras
-        const truncatedWords = words.slice(0, 250)
-        const truncatedText = truncatedWords.join(" ")
-        setOriginalText(truncatedText)
-        setShowOriginalAI(false)
-      }
-    } catch (err) {
-      console.error("Failed to read clipboard contents: ", err)
+
+const handleHumanize = async () => {
+  if (!user){
+  router.push("/register")
+  return
+  }
+  setIsLoading(true)
+  setShowResultAI(false)
+  try {
+    if (!originalText){
+      const inputText = localStorage.getItem("inputText") || ""
+      console.log("from local storage: "+inputText)
+      const response = await postHumanizeText(userProfile?.uid, inputText)
+      const data = await response.json()
+      console.log(data)
+      console.log(data.textHumanizado)
+      setHumanizedText(data.textHumanizado)
+      setIsCheckingOriginalAI(false)
     }
+    else{
+      const inputText = originalText 
+      console.log("from useState: "+inputText)
+      const response = await postHumanizeText(userProfile?.uid, inputText)
+      const data = await response.json()
+      console.log(data)
+      console.log(data.textHumanizado)
+      setHumanizedText(data.textHumanizado)
+      setIsCheckingOriginalAI(false)
+    }
+  } catch (error) {
+    console.log(error)
+  } finally {
+    setIsLoading(false)
   }
-
-  const handleHumanize = () => {
-    setIsLoading(true)
-    setShowResultAI(false)
-    setTimeout(() => {
-      const humanized = simulateHumanization(originalText)
-      setHumanizedText(humanized)
-      setIsLoading(false)
-    }, 2000)
-  }
+}
 
   const originalWordCount = originalText.trim() ? originalText.trim().split(/\s+/).length : 0
   const humanizedWordCount = humanizedText.trim() ? humanizedText.trim().split(/\s+/).length : 0
 
-  // Mock AI detection data
   const originalDetectors = [
     { name: "Turnitin", status: "detected" as const },
     { name: "GPTZero", status: "warning" as const },
@@ -131,42 +163,7 @@ export default function ResultsPage() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Navigation */}
-      <header className="bg-gray-50 py-4 border-b border-gray-200">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center space-x-2">
-            <PurpleWriteLogo className="w-8 h-8 text-primary" />
-            <span className="text-lg font-medium">Purple Write</span>
-          </Link>
-          <div className="flex items-center">
-            <nav className="flex items-center space-x-6 mr-6">
-              <Link href="/pricing" className="text-gray-600 hover:text-gray-900">
-                Pricing
-              </Link>
-              <Link href="/affiliate" className="text-gray-600 hover:text-gray-900">
-                Earn with us
-              </Link>
-              <Link href="#" className="text-gray-600 hover:text-gray-900">
-                Contact
-              </Link>
-            </nav>
-            <div className="flex items-center space-x-3">
-              <Link
-                href="/login"
-                className="bg-white text-gray-800 px-4 py-2 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/register"
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:opacity-90 transition-colors"
-              >
-                Try for free
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
+      <Header/>
       {/* Main Content */}
       <main className="flex-grow">
         {/* Hero Section */}
@@ -238,7 +235,7 @@ export default function ResultsPage() {
                 <>
                   <div className="min-h-[400px] flex items-center justify-center">
                     <AIDetectionResult
-                      overallPercentage={6}
+                      overallPercentage={humanWrittenPercentage}
                       detectors={originalDetectors}
                       isLoading={isCheckingOriginalAI}
                     />
@@ -298,7 +295,7 @@ export default function ResultsPage() {
                 <>
                   <div className="min-h-[400px] flex items-center justify-center">
                     <AIDetectionResult
-                      overallPercentage={98}
+                      overallPercentage={humanWrittenPercentage}
                       detectors={resultDetectors}
                       isLoading={isCheckingResultAI}
                     />
@@ -336,24 +333,6 @@ export default function ResultsPage() {
                     <div className="text-sm text-gray-500">{humanizedWordCount} words</div>
 
                     <div className="flex space-x-3">
-                      {humanizedText && (
-                        <button
-                          onClick={handleCheckResultAI}
-                          disabled={isCheckingResultAI}
-                          className="flex items-center space-x-2 border border-primary text-primary px-4 py-2 rounded-md hover:bg-primary/5 transition-colors text-sm disabled:opacity-50"
-                        >
-                          {isCheckingResultAI ? "Checking..." : "Check for AI"}
-                        </button>
-                      )}
-
-                      {humanizedText && (
-                        <button
-                          onClick={handleCopy}
-                          className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
-                        >
-                          {copied ? <CheckCircle className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
-                        </button>
-                      )}
                     </div>
                   </div>
                 </>
@@ -371,9 +350,6 @@ export default function ResultsPage() {
             <div className="flex space-x-6">
               <Link href="/pricing" className="text-sm text-gray-500 hover:text-gray-700">
                 Pricing
-              </Link>
-              <Link href="/affiliate" className="text-sm text-gray-500 hover:text-gray-700">
-                Earn with us
               </Link>
               <Link href="#" className="text-sm text-gray-500 hover:text-gray-700">
                 Contact

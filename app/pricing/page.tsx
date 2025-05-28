@@ -1,15 +1,18 @@
 "use client"
 
 import Link from "next/link"
-import { Check } from "lucide-react"
+import { Check, Loader2, Router } from "lucide-react"
 import { useState } from "react"
 import { PurpleWriteLogo } from "../../components/purple-write-logo"
 import Header from "@/components/ui/Header"
 import { useAuth } from "../context/AuthContext"
 import { postCheckoutSession } from "@/lib/firebase/apiRequests"
+import { useRouter } from "next/navigation"
+
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(true)
   const {user} = useAuth();
+  const router = useRouter()
   const pricingPlans = {
     monthly: [
       {
@@ -18,7 +21,7 @@ export default function PricingPage() {
         discountedPrice: null,
         wordsPerMonth: "5,000",
         wordsPerRequest: "500",
-        priceId: "price_1RQwmsQ96ai7WSnx5gl8SkOC",
+        priceId: "price_1RRCtLIcliwNmTTFShIaMcnk",
         features: [
           "500 words per request",
           "Bypass all AI detectors (incl. Turnitin & GPTZero)",
@@ -34,7 +37,7 @@ export default function PricingPage() {
       {
         name: "Pro",
         price: "$19.99",
-        priceId: "price_1RQwnaQ96ai7WSnxIMZAuxin",
+        priceId: "price_1RRCsuIcliwNmTTFsiKu18lP",
         discountedPrice: null,
         wordsPerMonth: "15,000",
         wordsPerRequest: "1,500",
@@ -60,7 +63,7 @@ export default function PricingPage() {
         discountedPrice: null,
         wordsPerMonth: "30,000",
         wordsPerRequest: "3,000",
-        priceId: "price_1RQwoMQ96ai7WSnxzsDQn4xc",
+        priceId: "price_1RRCsRIcliwNmTTFv4hHbjfI",
         features: [
           "3,000 words per request",
           "Bypass all AI detectors (incl. Turnitin & GPTZero)",
@@ -84,7 +87,7 @@ export default function PricingPage() {
       {
         name: "Basic",
         price: "$6.99",
-        priceId: "price_1RQwmsQ96ai7WSnx5gl8SkOC",
+        priceId: "price_1RTPltIcliwNmTTFScaczR70",
         discountedPrice: "$4.99",
         wordsPerMonth: "5,000",
         wordsPerRequest: "500",
@@ -103,7 +106,7 @@ export default function PricingPage() {
       {
         name: "Pro",
         price: "$19.99",
-        priceId: "price_1RQwmsQ96ai7WSnx5gl8SkOC",
+        priceId: "price_1RTPmEIcliwNmTTFRfRcfWNe",
         discountedPrice: "$13.99",
         wordsPerMonth: "15,000",
         wordsPerRequest: "1,500",
@@ -126,7 +129,7 @@ export default function PricingPage() {
       {
         name: "Ultra",
         price: "$39.99",
-        priceId: "price_1RQwmsQ96ai7WSnx5gl8SkOC",
+        priceId: "price_1RTPmhIcliwNmTTFsQiqS7is",
         discountedPrice: "$27.99",
         wordsPerMonth: "30,000",
         wordsPerRequest: "3,000",
@@ -152,7 +155,7 @@ export default function PricingPage() {
   }
 
   const currentPlans = isAnnual ? pricingPlans.annual : pricingPlans.monthly
-
+  const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Navigation */}
@@ -216,11 +219,25 @@ export default function PricingPage() {
                   </div>
                 </div>
 
-                <button className="bg-primary text-primary-foreground py-3 rounded-md hover:opacity-90 transition-colors mb-6" onClick={() => {
-                  postCheckoutSession(plan.priceId, user?.uid)
-                }}>
-                  Subscribe
-                </button>
+                <button className=" flex items-center justify-center bg-primary text-primary-foreground py-3 rounded-md hover:opacity-90 transition-colors mb-6"   onClick={async () => {
+              setLoadingIndex(index);
+              if (!user){
+                router.push("/register")
+                return
+              }
+              await postCheckoutSession(plan.priceId, user?.uid);
+              setLoadingIndex(null); 
+            }}
+          >
+            {loadingIndex === index ? (
+              <>
+                <Loader2 className="animate-spin w-5 h-5" />
+                Processing...
+              </>
+            ) : (
+              "Subscribe"
+            )}
+          </button>
 
                 <ul className="space-y-3">
                   {plan.features.map((feature, featureIndex) => (

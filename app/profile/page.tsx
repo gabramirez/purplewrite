@@ -11,6 +11,8 @@ import Header from "@/components/ui/Header"
 import { useRouter } from "next/navigation"
 import { getUserProfile } from "@/lib/firebase/apiRequests"
 export default function ProfilePage() {
+  const [subscriptionFormated, setSubscriptionFormated] = useState("")
+  const [expirationDate, setExpirationDate] = useState("")
   const [profileLoading, setProfileLoading] = useState(true)
   const { user, logOut } = useAuth();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
@@ -24,17 +26,29 @@ useEffect(() => {
         console.error("Erro ao buscar perfil:", res.statusText);
         return;
       }
-
       const data: UserProfile = await res.json();
-      console.log(data)
       setUserProfile(data);
+
+      setExpirationDate(formatExpirationDate(data.currentPeriodEnd))
+      if(data.subscription === "freeplan"){
+        setSubscriptionFormated("Free plan")
+      }
+      else{
+        setSubscriptionFormated(capitalizeFirstLetter(data.subscription))
+      }
+      setProfileLoading(false)
     } catch (error) {
-      console.error("Erro na requisição:", error);
+      setProfileLoading(false)
     }
   };
 
   fetchUserProfile();
 }, [user?.uid]);
+
+  function capitalizeFirstLetter(str: string | undefined): string {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 function formatExpirationDate(timestamp: number): string {
   const date = new Date(timestamp * 1000);
@@ -51,8 +65,10 @@ function formatExpirationDate(timestamp: number): string {
     hour12: true,
   }).format(date);
 
-  return `Your plan expires on ${formattedDate} at ${formattedTime}`;
+
+  return `${formattedDate} at ${formattedTime}`;
 }
+  console.log(user?.uid)
   return (      
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Navigation */}
@@ -138,12 +154,12 @@ function formatExpirationDate(timestamp: number): string {
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Current Plan</p>
-                    <p className="text-gray-900 font-medium">{userProfile?.subscription}</p>
+                    <p className="text-gray-900 font-medium">{subscriptionFormated}</p>
                   </div>
 
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Renewal Date</p>
-                    <p className="text-gray-900">June 15, 2025</p>
+                    <p className="text-gray-900">{expirationDate}</p>
                   </div>
 
                 </div>

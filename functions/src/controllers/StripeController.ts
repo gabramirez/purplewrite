@@ -1,7 +1,7 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { Stripe } from "stripe";
 import { createCheckoutSessionService } from "../services/createCheckoutSessionService";
-export const createCheckoutSession = onRequest(async (req, res) => {
+export const createCheckoutSession = onRequest({cors:true},async (req, res) => {
     const secretKey = process.env.STRIPE_SECRET_KEY!
     const {userUid} = req.body
     const {priceId} = req.body

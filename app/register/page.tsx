@@ -22,16 +22,15 @@ export default function RegisterPage() {
   
   const handleGoogleClick = async () => {
     await handleRegisterWithGoogle(signInWithGoogle)
-    router.push("/");
+    router.push('/');
   }
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return alert("Email is required");
     if (password.length < 8) return alert("Password must be at least 8 characters long.");
-
     await handleEmailRegister(auth, email, password)
-    router.push("/");
+    router.push('/');
   }
 
 
