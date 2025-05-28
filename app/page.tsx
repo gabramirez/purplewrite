@@ -26,15 +26,14 @@ export default function Home() {
       try {
         const res = await getUserProfile(user.uid)
         if (!res.ok) {
-          console.error("Erro ao buscar perfil:", res.statusText);
+
           return;
         }
 
         const data: UserProfile = await res.json();
-        console.log(data)
         setUserProfile(data);
       } catch (error) {
-        console.error("Erro na requisição:", error);
+
       }
     };
 
@@ -53,7 +52,8 @@ export default function Home() {
     }
     if (text.trim()) {
       localStorage.setItem("inputText", text)
-      localStorage.setItem("userProfile", JSON.stringify(user))
+      localStorage.setItem("user", JSON.stringify(user))
+      localStorage.setItem("userProfile", JSON.stringify(userProfile))
       router.push("/results")
     }
   }
@@ -86,35 +86,21 @@ export default function Home() {
     try {
       const clipboardText = await navigator.clipboard.readText()
       const words = clipboardText.trim() ? clipboardText.trim().split(/\s+/) : []
-
       if (words.length <= wordsBalance) {
         setText(clipboardText)
         setShowAIDetection(false)
       } else {
-
         const truncatedWords = words.slice(0, wordsBalance)
         const truncatedText = truncatedWords.join(" ")
         setText(truncatedText)
         setShowAIDetection(false)
       }
     } catch (err) {
-      console.error("Failed to read clipboard contents: ", err)
     }
   }
 
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0
-  const mockDetectors = [
-    { name: "Turnitin", status: "detected" as const },
-    { name: "GPTZero", status: "warning" as const },
-    { name: "OpenAI", status: "detected" as const },
-    { name: "Writer", status: "detected" as const },
-    { name: "CrossPlag", status: "detected" as const },
-    { name: "CopyLeaks", status: "warning" as const },
-    { name: "Sapling", status: "detected" as const },
-    { name: "Originality", status: "detected" as const },
-    { name: "ZeroGPT", status: "warning" as const },
-  ]
-  console.log(user?.uid)
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Navigation */}

@@ -11,6 +11,7 @@ import { useAuth } from "../context/AuthContext"
 import { User } from "firebase/auth"
 import Header from "@/components/ui/Header"
 import { useRouter } from "next/navigation"
+import { UserProfile } from "@/lib/firebase/CrudService"
 export default function ResultsPage() {
   const [originalText, setOriginalText] = useState("")
   const [humanizedText, setHumanizedText] = useState("")
@@ -22,6 +23,7 @@ export default function ResultsPage() {
   const [isCheckingOriginalAI, setIsCheckingOriginalAI] = useState(false)
   const [isCheckingResultAI, setIsCheckingResultAI] = useState(false)
   const [humanWrittenPercentage, setHumanWrittenPercentage] = useState(0)
+  const [wordsBalance, setWordsBalance] = useState(0)
   const {user} = useAuth();
   const router = useRouter()
   useEffect(() => {
@@ -29,8 +31,8 @@ export default function ResultsPage() {
     const savedUser = localStorage.getItem("userProfile") as string
     setOriginalText(inputText)
       try {
-        const userProfileJson = JSON.parse(savedUser) as User
-        setUserProfile(userProfileJson)
+        const userProfileJson = JSON.parse(savedUser) as UserProfile      
+        setWordsBalance(userProfileJson.wordsBalance)
       } catch (error) {
 
       }
@@ -76,12 +78,10 @@ export default function ResultsPage() {
       }
     }
   } catch (error) {
-    console.log(error)
   } finally {
     setIsLoading(false)
     setShowOriginalAI(true)
   }
-    
   }
 
 
@@ -89,8 +89,7 @@ export default function ResultsPage() {
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const inputText = e.target.value
     const words = inputText.trim() ? inputText.trim().split(/\s+/) : []
-
-    if (words.length <= 250) {
+    if (words.length <= wordsBalance) {
       setOriginalText(inputText)
       setShowOriginalAI(false)
     }
@@ -108,26 +107,18 @@ const handleHumanize = async () => {
   try {
     if (!originalText){
       const inputText = localStorage.getItem("inputText") || ""
-      console.log("from local storage: "+inputText)
       const response = await postHumanizeText(userProfile?.uid, inputText)
       const data = await response.json()
-      console.log(data)
-      console.log(data.textHumanizado)
       setHumanizedText(data.textHumanizado)
       setIsCheckingOriginalAI(false)
     }
     else{
       const inputText = originalText 
-      console.log("from useState: "+inputText)
       const response = await postHumanizeText(userProfile?.uid, inputText)
       const data = await response.json()
-      console.log(data)
-      console.log(data.textHumanizado)
-      setHumanizedText(data.textHumanizado)
       setIsCheckingOriginalAI(false)
     }
   } catch (error) {
-    console.log(error)
   } finally {
     setIsLoading(false)
   }
@@ -200,15 +191,15 @@ const handleHumanize = async () => {
 
                   <div className="flex justify-between items-center">
                     <div
-                      className={`text-sm ${originalWordCount > 200 ? (originalWordCount >= 250 ? "text-red-500" : "text-yellow-500") : "text-gray-500"}`}
+                      className={`text-sm ${originalWordCount > wordsBalance*4/5 ? (originalWordCount >= wordsBalance ? "text-red-500" : "text-yellow-500") : "text-gray-500"}`}
                     >
-                      {originalWordCount} / 250 words
+                      {originalWordCount} / {wordsBalance}
                     </div>
 
                     <div className="flex space-x-3">
                       <button
                         onClick={handleCheckOriginalAI}
-                        disabled={!originalText.trim() || isCheckingOriginalAI || originalWordCount > 250}
+                        disabled={!originalText.trim() || isCheckingOriginalAI || originalWordCount > wordsBalance}
                         className="flex items-center space-x-2 border border-primary text-primary px-4 py-2 rounded-md hover:bg-primary/5 transition-colors text-sm disabled:opacity-50"
                       >
                         {isCheckingOriginalAI ? "Checking..." : "Check for AI"}
@@ -216,7 +207,7 @@ const handleHumanize = async () => {
 
                       <button
                         onClick={handleHumanize}
-                        disabled={!originalText.trim() || isLoading || originalWordCount > 250}
+                        disabled={!originalText.trim() || isLoading || originalWordCount > wordsBalance}
                         className="flex items-center space-x-2 bg-primary text-primary-foreground px-4 py-2 rounded-md hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                       >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
