@@ -5,7 +5,6 @@ import { LogOut, CreditCard, Clock } from "lucide-react"
 import { PurpleWriteLogo } from "../../components/purple-write-logo"
 import { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
-import { findUserByUserId } from "@/lib/firebase/CrudService"
 import { UserProfile } from "@/lib/firebase/CrudService"
 import Header from "@/components/ui/Header"
 import { useRouter } from "next/navigation"
@@ -68,7 +67,6 @@ function formatExpirationDate(timestamp: number): string {
 
   return `${formattedDate} at ${formattedTime}`;
 }
-  console.log(user?.uid)
   return (      
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Navigation */}

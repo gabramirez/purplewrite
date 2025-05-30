@@ -32,7 +32,7 @@ export default function ResultsPage() {
     setOriginalText(inputText)
       try {
         const userProfileJson = JSON.parse(savedUser) as UserProfile      
-        setWordsBalance(userProfileJson.wordsBalance)
+        setWordsBalance(userProfileJson.wordsPerRequest)
       } catch (error) {
 
       }
@@ -57,7 +57,17 @@ export default function ResultsPage() {
     try {
     if (!originalText){
       const inputText = localStorage.getItem("inputText") || ""
-      const response = await postCheckAi("Aaaa", inputText)
+      const response = await postCheckAi(userProfile?.uid, inputText)
+      const status = response.status
+      if (status === 400){
+        alert("You must be logged to use this feature")
+        setIsCheckingOriginalAI(false)
+        return
+      }
+      if (status === 403){
+        alert("You don't have enough words balance")
+        setIsCheckingOriginalAI(false)
+      }
       const data = await response.json()
       let humanPercent = (data.humanPercent)
       humanPercent = Math.trunc(parseFloat(humanPercent))
@@ -67,14 +77,23 @@ export default function ResultsPage() {
     else{
       const inputText = originalText 
       try{
-      const response = await postCheckAi("a", inputText)
-      const data = await response.json()   
-      let humanPercent = (data.humanPercent)
-      humanPercent = Math.trunc(parseFloat(humanPercent))
-      setHumanWrittenPercentage(humanPercent)
-      setIsCheckingOriginalAI(false)
+        const response = await postCheckAi(userProfile?.uid, inputText)
+        const data = await response.json()   
+        const status = response.status
+        if (status === 400){
+            alert("You must be logged to use this feature")
+            return
+        }
+        if (status === 403){
+          alert("You don't have enough words balance")
+        }
+        let humanPercent = (data.humanPercent)
+        humanPercent = Math.trunc(parseFloat(humanPercent))
+        setHumanWrittenPercentage(humanPercent)
+        setIsCheckingOriginalAI(false)
       }
       catch(e){
+
       }
     }
   } catch (error) {
@@ -83,8 +102,6 @@ export default function ResultsPage() {
     setShowOriginalAI(true)
   }
   }
-
-
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const inputText = e.target.value
@@ -95,19 +112,28 @@ export default function ResultsPage() {
     }
   }
 
-
-
 const handleHumanize = async () => {
-  if (!user){
-  router.push("/register")
-  return
-  }
+
   setIsLoading(true)
   setShowResultAI(false)
   try {
     if (!originalText){
       const inputText = localStorage.getItem("inputText") || ""
-      const response = await postHumanizeText(userProfile?.uid, inputText)
+      const savedUser = localStorage.getItem("userProfile") as string
+      const userProfileJson = JSON.parse(savedUser) as UserProfile      
+      const response = await postHumanizeText(userProfileJson.userId, inputText)
+      const status = response.status
+      if (status === 400){
+        alert("You must be logged to use this feature")
+        router.push("/login")
+        setIsCheckingOriginalAI(false)
+        return
+    }
+      if (status === 403){
+        alert("You don't have enough words balance")
+        router.push("/pricing")
+        setIsCheckingOriginalAI(false)
+      }
       const data = await response.json()
       setHumanizedText(data.textHumanizado)
       setIsCheckingOriginalAI(false)
@@ -115,7 +141,18 @@ const handleHumanize = async () => {
     else{
       const inputText = originalText 
       const response = await postHumanizeText(userProfile?.uid, inputText)
+      const status = response.status
+      if (status === 400){
+        alert("You must be logged to use this feature")
+        router.push("/login")
+        return
+      }
+      if (status === 403){
+        alert("You don't have enough words balance")
+        router.push("/pricing")
+      }
       const data = await response.json()
+      setHumanizedText(data.textHumanizado)
       setIsCheckingOriginalAI(false)
     }
   } catch (error) {

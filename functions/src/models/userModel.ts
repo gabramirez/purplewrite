@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import {DocumentReference} from "firebase-admin/firestore"
 import { SubscriptionPlan } from "../interfaces/SubscriptionPlan";
 import { PlanTemplate } from "../interfaces/SubscriptionPlan";
+import { UserProfile } from "../interfaces/userProfileInterface";
 
 export const findUserByUserUid = async (userUid:string) => { 
     const db = admin.firestore()
@@ -61,7 +62,8 @@ export const createUserProfile = async (userUid: string) => {
       await userRef.set({
         userId: userUid,
         subscription: "freeplan",
-        wordsBalance: 250,
+        wordsBalance: 500,
+        wordsPerRequest:250,
         subscriptionId: ""
       });
       return "user profile created"
@@ -73,3 +75,12 @@ export const createUserProfile = async (userUid: string) => {
     return "user profile already exists"
   }
 };
+export const updateUserWordsBalance = async (userUid:string, wordsToBeDiscounted:number) => {
+  const userRef = await findUserByUserUid(userUid)
+  const user = await userRef.get()
+  const userWordsBalance =  user.data() as UserProfile
+  const actualWords = userWordsBalance.wordsBalance
+  userRef.update({
+    wordsBalance:  actualWords - wordsToBeDiscounted 
+  })
+}

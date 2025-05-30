@@ -19,31 +19,38 @@ export const invoicePaidService =  async (invoice : Stripe.Invoice, stripe: Stri
     const productId = planProduct.pricing.price_details.product
     let subscriptionPlan: SubscriptionPlan;
     switch (productId) {
-        case 'prod_SLe5pog9aGsDOw': // basic
+        case 'prod_SLuiIqxMDxjjbE': // basic
+        case 'prod_SOCA9DiBuA4p62':
         subscriptionPlan = {
             subscriptionId:subscriptionId,
             wordsBalance: 5000,
+            wordsPerRequest:500,
             plan: 'basic',
         };
         break;
-        case 'prod_SLe5GI3s3VjnA7': // pro
+        case 'prod_SLuiGy1SevlD36': // pro
+        case 'prod_SOCAOW9ABntgav':
         subscriptionPlan = {
             subscriptionId:subscriptionId,
             wordsBalance: 15000,
+            wordsPerRequest:1500,
             plan: 'pro',
             };
         break;
-        case 'prod_SLe67diN0hGAAF': // ultra
+        case 'prod_SOCBSAjDBZIRWy': // ultra
+        case 'prod_SLuhATjoeu84vB':
             subscriptionPlan = {
                 subscriptionId:subscriptionId,
                 wordsBalance: 30000,
+                wordsPerRequest:15000,
                 plan: 'ultra',
             };
         break;
         default:
             subscriptionPlan = {
                 subscriptionId:subscriptionId,
-                wordsBalance: 250,
+                wordsPerRequest:250,
+                wordsBalance:500,
                 plan: 'freeplan',
               };
         break;

@@ -23,6 +23,7 @@ module.exports = {
   ],
   rules: {  
    // Regras desativadas para evitar alertas chatos
+    'no-useless-escape': 'off',
     'no-trailing-spaces': 'off',
     'eol-last': 'off',
     'no-multi-spaces': 'off',

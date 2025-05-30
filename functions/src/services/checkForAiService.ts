@@ -8,7 +8,7 @@ export const checkForAiService = async (inputText:string) => {
     },
     body: JSON.stringify({
         document: inputText,
-        multilingual: false
+        multilingual: true
     }),
     });
     console.log(responseGptZero.formData)

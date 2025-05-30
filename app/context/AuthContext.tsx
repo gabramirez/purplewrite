@@ -40,7 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithEmail = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
+    try{
+      	await signInWithEmailAndPassword(auth, email, password);
+    }
+    catch(e) {
+    }
   };
 
   const registerWithEmail = async (email: string, password: string) => {

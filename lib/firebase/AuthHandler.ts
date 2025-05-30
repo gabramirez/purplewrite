@@ -1,7 +1,7 @@
 import { useRouter } from "next/navigation";
 import { db,auth} from "@/lib/firebase/firebase"
 import {doc, getDoc, setDoc } from "firebase/firestore"
-import { getAuth ,createUserWithEmailAndPassword, User, signInWithEmailAndPassword, UserCredential, Auth } from "firebase/auth";
+import { getAuth ,createUserWithEmailAndPassword, User, signInWithEmailAndPassword, UserCredential, Auth, sendEmailVerification } from "firebase/auth";
 import { useAuth } from "@/app/context/AuthContext";
 
 const createUserProfile = async (userUid:string) => {
@@ -24,7 +24,6 @@ export const handleRegisterWithGoogle = async (
 ) => {
   try {
     const { user } = await signInWithGoogle()
-    console.log(user)
     createUserProfile(user.uid)
 
   } catch (error: any) {
@@ -40,9 +39,9 @@ export const handleEmailRegister = async (
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
     createUserProfile(userCredential.user.uid)
-    
+    await sendEmailVerification(userCredential.user)
+    console.log("verification email sended")
   } catch (error: any) {
-
   }
 }
 

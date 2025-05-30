@@ -15,9 +15,10 @@ export default function Home() {
   subscription: string;
   subscriptionId: string;
   userId: string;
+  wordsPerRequest:number;
   wordsBalance: number;
 }
-  const { user} = useAuth();
+  const { user } = useAuth();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [detectorResults, setDetectorResults] = useState<AIDetector[]>([])
   useEffect(() => {
@@ -39,7 +40,7 @@ export default function Home() {
 
     fetchUserProfile();
   }, [user?.uid]);
-  const wordsBalance = userProfile?.wordsBalance ?? 250
+  const wordsBalance = userProfile?.wordsPerRequest ?? 250
   const [text, setText] = useState("")
   const [showAIDetection, setShowAIDetection] = useState(false)
   const [isCheckingAI, setIsCheckingAI] = useState(false)
@@ -66,6 +67,19 @@ export default function Home() {
     setIsCheckingAI(true)
     setShowAIDetection(true)
     const response = await postCheckAi(user!.uid, text)
+    
+    const status = response.status
+    if (status === 400){
+      alert("You must be logged to use this feature")
+      setIsCheckingAI(false)
+      return
+    }
+    if (status === 403){
+      alert("You don't have enough words balance")
+      router.push("/pricing")
+      setIsCheckingAI(false)   
+      return
+    }
     const data = await response.json()
     let humanPercent = (data.humanPercent)
     humanPercent = Math.trunc(parseFloat(humanPercent))
@@ -82,6 +96,7 @@ export default function Home() {
       setShowAIDetection(false)
     }
   }   
+
   const handlePasteText = async () => {
     try {
       const clipboardText = await navigator.clipboard.readText()
