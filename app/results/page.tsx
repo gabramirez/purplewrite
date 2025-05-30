@@ -12,6 +12,9 @@ import { User } from "firebase/auth"
 import Header from "@/components/ui/Header"
 import { useRouter } from "next/navigation"
 import { UserProfile } from "@/lib/firebase/CrudService"
+import { goodResultDetectors, halfResultDetectors, zeroDetectors } from "./mockIasResponse"
+import { set } from "react-hook-form"
+import { AIDetector } from "@/lib/firebase/mockDetection"
 export default function ResultsPage() {
   const [originalText, setOriginalText] = useState("")
   const [humanizedText, setHumanizedText] = useState("")
@@ -159,34 +162,21 @@ const handleHumanize = async () => {
   } finally {
     setIsLoading(false)
   }
-}
 
+}
+const handleAiDetector = (percentage:number) => {
+    if (percentage <= 20){
+      return zeroDetectors
+    }
+    if (percentage > 20 && percentage <= 70 ){
+      return halfResultDetectors
+    }
+    if (percentage > 70){
+      return goodResultDetectors
+    }
+  }
   const originalWordCount = originalText.trim() ? originalText.trim().split(/\s+/).length : 0
   const humanizedWordCount = humanizedText.trim() ? humanizedText.trim().split(/\s+/).length : 0
-
-  const originalDetectors = [
-    { name: "Turnitin", status: "detected" as const },
-    { name: "GPTZero", status: "warning" as const },
-    { name: "OpenAI", status: "detected" as const },
-    { name: "Writer", status: "detected" as const },
-    { name: "CrossPlag", status: "detected" as const },
-    { name: "CopyLeaks", status: "warning" as const },
-    { name: "Sapling", status: "detected" as const },
-    { name: "Originality", status: "detected" as const },
-    { name: "ZeroGPT", status: "warning" as const },
-  ]
-
-  const resultDetectors = [
-    { name: "Turnitin", status: "passed" as const },
-    { name: "GPTZero", status: "passed" as const },
-    { name: "OpenAI", status: "passed" as const },
-    { name: "Writer", status: "passed" as const },
-    { name: "CrossPlag", status: "passed" as const },
-    { name: "CopyLeaks", status: "passed" as const },
-    { name: "Sapling", status: "passed" as const },
-    { name: "Originality", status: "passed" as const },
-    { name: "ZeroGPT", status: "passed" as const },
-  ]
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -264,7 +254,7 @@ const handleHumanize = async () => {
                   <div className="min-h-[400px] flex items-center justify-center">
                     <AIDetectionResult
                       overallPercentage={humanWrittenPercentage}
-                      detectors={originalDetectors}
+                      detectors={handleAiDetector(humanWrittenPercentage) as AIDetector[]}
                       isLoading={isCheckingOriginalAI}
                     />
                   </div>
@@ -324,7 +314,7 @@ const handleHumanize = async () => {
                   <div className="min-h-[400px] flex items-center justify-center">
                     <AIDetectionResult
                       overallPercentage={humanWrittenPercentage}
-                      detectors={resultDetectors}
+                      detectors={handleAiDetector(humanWrittenPercentage) as AIDetector[]}
                       isLoading={isCheckingResultAI}
                     />
                   </div>

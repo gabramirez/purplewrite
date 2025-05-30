@@ -10,6 +10,7 @@ import { AIDetectionResult } from "../components/ai-detection-result"
 import { useRouter } from "next/navigation"
 import { postCheckAi } from "@/lib/firebase/apiRequests";
 import { AIDetector, generateDetectorResults } from "@/lib/firebase/mockDetection";
+import { zeroDetectors, goodResultDetectors, halfResultDetectors} from "./results/mockIasResponse";
 export default function Home() {
   interface UserProfile {
   subscription: string;
@@ -59,6 +60,19 @@ export default function Home() {
     }
   }
 
+  const handleAiDetector = (percentage:number) => {
+      if (percentage <= 20){
+        return zeroDetectors
+      }
+      if (percentage > 20 && percentage <= 70 ){
+        return halfResultDetectors
+      }
+      if (percentage > 70){
+        return goodResultDetectors
+      }
+    }
+
+
   const handleCheckAI = async () => {
     if (!user){
       router.push("/register")
@@ -67,7 +81,7 @@ export default function Home() {
     setIsCheckingAI(true)
     setShowAIDetection(true)
     const response = await postCheckAi(user!.uid, text)
-    
+
     const status = response.status
     if (status === 400){
       alert("You must be logged to use this feature")
@@ -244,7 +258,7 @@ export default function Home() {
                   <h2 className="text-lg font-medium mb-4">Result</h2>
 
                   <div className="min-h-[400px] flex items-center justify-center">
-                    <AIDetectionResult overallPercentage={humanWrittenPercentage} detectors={detectorResults} isLoading={isCheckingAI} />
+                    <AIDetectionResult overallPercentage={humanWrittenPercentage} detectors={handleAiDetector(humanWrittenPercentage) as AIDetector[]} isLoading={isCheckingAI} />
                   </div>
                 </div>
               </div>
