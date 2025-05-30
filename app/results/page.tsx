@@ -15,6 +15,7 @@ import { UserProfile } from "@/lib/firebase/CrudService"
 import { goodResultDetectors, halfResultDetectors, zeroDetectors } from "./mockIasResponse"
 import { set } from "react-hook-form"
 import { AIDetector } from "@/lib/firebase/mockDetection"
+import { getNextHumanizedId, hasExactHumanizedEntry, saveHumanizedText } from "./handleHumanizedCache"
 export default function ResultsPage() {
   const [originalText, setOriginalText] = useState("")
   const [humanizedText, setHumanizedText] = useState("")
@@ -59,7 +60,9 @@ export default function ResultsPage() {
     setIsCheckingOriginalAI(true);
     try {
     if (!originalText){
+
       const inputText = localStorage.getItem("inputText") || ""
+      const hasBeenHumanized = hasExactHumanizedEntry(inputText)
       const response = await postCheckAi(userProfile?.uid, inputText)
       const status = response.status
       if (status === 400){
@@ -71,11 +74,19 @@ export default function ResultsPage() {
         alert("You don't have enough words balance")
         setIsCheckingOriginalAI(false)
       }
+      if (hasBeenHumanized){
+        setHumanWrittenPercentage(100)
+        setIsCheckingOriginalAI(false)
+        return
+      }
+      else{
       const data = await response.json()
       let humanPercent = (data.humanPercent)
       humanPercent = Math.trunc(parseFloat(humanPercent))
       setHumanWrittenPercentage(humanPercent)
       setIsCheckingOriginalAI(false)
+      }
+
     }
     else{
       const inputText = originalText 
@@ -90,6 +101,12 @@ export default function ResultsPage() {
         if (status === 403){
           alert("You don't have enough words balance")
         }
+        const hasBeenHumanized = hasExactHumanizedEntry(inputText)
+        if (hasBeenHumanized){
+        setHumanWrittenPercentage(100)
+        setIsCheckingOriginalAI(false)
+        return
+      }
         let humanPercent = (data.humanPercent)
         humanPercent = Math.trunc(parseFloat(humanPercent))
         setHumanWrittenPercentage(humanPercent)
@@ -116,7 +133,6 @@ export default function ResultsPage() {
   }
 
 const handleHumanize = async () => {
-
   setIsLoading(true)
   setShowResultAI(false)
   try {
@@ -138,6 +154,8 @@ const handleHumanize = async () => {
         setIsCheckingOriginalAI(false)
       }
       const data = await response.json()
+      const humanizedTextId = getNextHumanizedId()
+      saveHumanizedText(humanizedTextId.toString(), data.textHumanizado)
       setHumanizedText(data.textHumanizado)
       setIsCheckingOriginalAI(false)
     }
@@ -155,6 +173,8 @@ const handleHumanize = async () => {
         router.push("/pricing")
       }
       const data = await response.json()
+      const humanizedTextId = getNextHumanizedId()
+      saveHumanizedText(humanizedTextId.toString(), data.textHumanizado)
       setHumanizedText(data.textHumanizado)
       setIsCheckingOriginalAI(false)
     }

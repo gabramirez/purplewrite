@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"
 import { postCheckAi } from "@/lib/firebase/apiRequests";
 import { AIDetector, generateDetectorResults } from "@/lib/firebase/mockDetection";
 import { zeroDetectors, goodResultDetectors, halfResultDetectors} from "./results/mockIasResponse";
+import { getNextHumanizedId, hasExactHumanizedEntry, saveHumanizedText } from "./results/handleHumanizedCache";
 export default function Home() {
   interface UserProfile {
   subscription: string;
@@ -81,7 +82,6 @@ export default function Home() {
     setIsCheckingAI(true)
     setShowAIDetection(true)
     const response = await postCheckAi(user!.uid, text)
-
     const status = response.status
     if (status === 400){
       alert("You must be logged to use this feature")
@@ -94,6 +94,12 @@ export default function Home() {
       setIsCheckingAI(false)   
       return
     }
+    const hasBeenHumanized = hasExactHumanizedEntry(text)
+    if (hasBeenHumanized){
+      setHumanWrittenPercentage(100)
+      setIsCheckingAI(false)
+      return
+      }
     const data = await response.json()
     let humanPercent = (data.humanPercent)
     humanPercent = Math.trunc(parseFloat(humanPercent))
