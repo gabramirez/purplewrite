@@ -21,6 +21,7 @@ export const invoicePaidService =  async (invoice : Stripe.Invoice, stripe: Stri
     switch (productId) {
         case 'prod_SLuiIqxMDxjjbE': // basic
         case 'prod_SOCA9DiBuA4p62':
+        case 'prod_SPkhNHQYo4aL7q':
         subscriptionPlan = {
             subscriptionId:subscriptionId,
             wordsBalance: 5000,

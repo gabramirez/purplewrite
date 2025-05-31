@@ -21,7 +21,7 @@ export default function PricingPage() {
         discountedPrice: null,
         wordsPerMonth: "5,000",
         wordsPerRequest: "500",
-        priceId: "price_1RRCtLIcliwNmTTFShIaMcnk",
+        priceId: "price_1RUvCWIcliwNmTTFiEMyYrFe", 
         features: [
           "500 words per request",
           "Bypass all AI detectors (incl. Turnitin & GPTZero)",
